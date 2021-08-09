@@ -1925,9 +1925,32 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
+      editmode: false,
       todos: '',
       form: new Form({
         title: ''
@@ -1935,26 +1958,63 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   methods: {
-    getTodos: function getTodos() {
+    deleteTodo: function deleteTodo(e) {
       var _this = this;
 
-      axios.get('/api/todo').then(function (res) {
+      var data = new FormData();
+      data.append('_method', 'DELETE');
+      axios.post('/api/todo/' + e.id, data).then(function (res) {
         _this.todos = res.data;
+      })["catch"](function (error) {
+        _this.form.errors.record(error.response.data.errors);
+      });
+    },
+    updateTodo: function updateTodo(e) {
+      var _this2 = this;
+
+      this.editmode = false;
+      var data = new FormData();
+      data.append('_method', 'PATCH');
+      data.append('title', e.title);
+      axios.post('/api/todo/' + e.id, data).then(function (res) {})["catch"](function (error) {
+        _this2.form.errors.record(error.response.data.errors);
+      });
+    },
+    toggleTodo: function toggleTodo(e) {
+      e.completed = !e.completed;
+      var data = new FormData();
+      data.append('_method', 'PATCH');
+
+      if (e.completed == true) {
+        data.append('completed', 1);
+      }
+
+      if (e.completed == false) {
+        data.append('completed', 0);
+      }
+
+      axios.post('/api/todo/' + e.id, data);
+    },
+    getTodos: function getTodos() {
+      var _this3 = this;
+
+      axios.get('/api/todo').then(function (res) {
+        _this3.todos = res.data;
       })["catch"](function (error) {
         console.log(error);
       });
     },
     saveData: function saveData() {
-      var _this2 = this;
+      var _this4 = this;
 
       var data = new FormData();
       data.append('title', this.form.title);
       axios.post('/api/todo', data).then(function (res) {
-        _this2.form.reset();
+        _this4.form.reset();
 
-        _this2.getTodos();
+        _this4.getTodos();
       })["catch"](function (error) {
-        _this2.form.errors.record(error.response.data.errors);
+        _this4.form.errors.record(error.response.data.errors);
       });
     }
   },
@@ -37682,16 +37742,159 @@ var render = function() {
       ]
     ),
     _vm._v(" "),
-    _c(
-      "div",
-      { staticClass: "w-25" },
-      _vm._l(_vm.todos, function(todo) {
-        return _c("div", { key: todo.id, staticClass: "w-100" }, [
-          _vm._v(_vm._s(todo.title))
-        ])
-      }),
-      0
-    )
+    _c("section", { staticClass: "pb-5 header text-center" }, [
+      _c("div", { staticClass: "container mx-auto border-0 shadow" }, [
+        _c(
+          "div",
+          { staticClass: "row" },
+          _vm._l(_vm.todos, function(todo) {
+            return _c(
+              "div",
+              {
+                key: todo.id,
+                staticClass:
+                  "w-100 d-flex align-items-center p-3 bg-white border-bottom"
+              },
+              [
+                _c("span", { staticClass: "mr-2" }, [
+                  todo.completed == false
+                    ? _c(
+                        "button",
+                        {
+                          staticClass: "btn btn-primary btn-sm",
+                          attrs: { type: "button", title: "Add" },
+                          on: {
+                            click: function($event) {
+                              return _vm.toggleTodo(todo)
+                            }
+                          }
+                        },
+                        [_c("i", { staticClass: "fa fa-circle-thin " })]
+                      )
+                    : _vm._e(),
+                  _vm._v(" "),
+                  todo.completed == true
+                    ? _c(
+                        "button",
+                        {
+                          staticClass: "btn btn-primary btn-sm",
+                          attrs: { type: "button", title: "Add" },
+                          on: {
+                            click: function($event) {
+                              return _vm.toggleTodo(todo)
+                            }
+                          }
+                        },
+                        [_c("i", { staticClass: "fa fa-check-circle-o" })]
+                      )
+                    : _vm._e()
+                ]),
+                _vm._v(" "),
+                _c("div", { staticClass: "font-weight-bolder" }, [
+                  _vm.editmode == false || _vm.editmode != todo.id
+                    ? _c("span", [_vm._v(_vm._s(todo.title))])
+                    : _vm._e(),
+                  _vm.editmode == todo.id
+                    ? _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: todo.title,
+                            expression: "todo.title"
+                          }
+                        ],
+                        attrs: { type: "text" },
+                        domProps: { value: todo.title },
+                        on: {
+                          input: function($event) {
+                            if ($event.target.composing) {
+                              return
+                            }
+                            _vm.$set(todo, "title", $event.target.value)
+                          }
+                        }
+                      })
+                    : _vm._e()
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "mx-auto d-flex align-items-center" },
+                  [
+                    _c("span", [
+                      _vm.editmode != todo.id
+                        ? _c(
+                            "button",
+                            {
+                              staticClass: "btn btn-warning btn-sm ml-1",
+                              attrs: {
+                                type: "button",
+                                "data-toggle": "tooltip",
+                                "data-placement": "top",
+                                title: "Edit"
+                              },
+                              on: {
+                                click: function($event) {
+                                  _vm.editmode = todo.id
+                                }
+                              }
+                            },
+                            [_c("i", { staticClass: "fa fa-edit" })]
+                          )
+                        : _vm._e(),
+                      _vm._v(" "),
+                      _vm.editmode == todo.id
+                        ? _c(
+                            "button",
+                            {
+                              staticClass: "btn btn-warning btn-sm ml-1",
+                              attrs: {
+                                type: "button",
+                                "data-toggle": "tooltip",
+                                "data-placement": "top",
+                                title: "Edit"
+                              },
+                              on: {
+                                click: function($event) {
+                                  return _vm.updateTodo(todo)
+                                }
+                              }
+                            },
+                            [_c("i", { staticClass: "fa fa-check-square-o" })]
+                          )
+                        : _vm._e()
+                    ]),
+                    _vm._v(" "),
+                    _c("span", [
+                      _c(
+                        "button",
+                        {
+                          staticClass: "btn btn-danger btn-sm ml-1",
+                          attrs: {
+                            type: "button",
+                            "data-toggle": "tooltip",
+                            "data-placement": "top",
+                            title: "Edit"
+                          },
+                          on: {
+                            click: function($event) {
+                              return _vm.deleteTodo(todo)
+                            }
+                          }
+                        },
+                        [_c("i", { staticClass: "fa fa-trash" })]
+                      )
+                    ])
+                  ]
+                )
+              ]
+            )
+          }),
+          0
+        )
+      ])
+    ])
   ])
 }
 var staticRenderFns = [
